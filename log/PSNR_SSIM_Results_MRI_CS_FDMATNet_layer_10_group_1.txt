@@ -1,0 +1,1 @@
+radial CS ratio is 5, Avg Proposed PSNR/SSIM for BrainImages is 34.63/0.9061, Epoch number of model is 800 
