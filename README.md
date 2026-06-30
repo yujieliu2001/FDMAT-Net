@@ -1,4 +1,4 @@
-# Feature domain deep unfolding network with multi-scale aggregation and transfer for undersampled MRI reconstruction
+# Feature domain deep unfolding network with multi-scale aggregation and transfer for undersampled MRI reconstruction (BSPC 2026)
 Official PyTorch implementation of FDMAT-Net described in the [Paper](https://www.sciencedirect.com/science/article/pii/S1746809426014102).
 
 ## Abstract:
