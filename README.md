@@ -1,1 +1,8 @@
-# FDMAT-Net
+# Feature domain deep unfolding network with multi-scale aggregation and transfer for undersampled MRI reconstruction
+Official PyTorch implementation of FDMAT-Net described in the [Paper](https://doi.org/10.1016/j.bspc.2026.110856).
+
+## Abstract:
+Many advanced compressed sensing MRI (CS-MRI) methods are based on deep unfolding networks (DUNs). To mitigate the information loss caused by back-and-forth mappings between image domain and feature domain during the reconstruction stage, some DUN-based methods perform the iterative optimization entirely within the feature domain. However, the simple manner of information transmission in the feature domain limits its ability to preserve fine details, particularly under low sampling rates, where reconstructed images often suffer from noticeable distortion. Here we propose FDMAT-Net, a novel feature domain deep unfolding network with multi-scale feature aggregation and transfer for undersampled MRI reconstruction. First, we unfold the proximal gradient descent (PGD) algorithm in the feature domain and introduce a multi-scale feature transfer strategy to preserve fine structural features, thereby significantly improving reconstruction performance. Second, we design a multi-scale feature aggregation block (MFAB) to model the nonlinear transformation process, which improves skip connections by introducing a cross-channel mix block (CCMB) to enable global channel-wise information interaction. Third, a data consistency layer is introduced to improve the accuracy of the reconstruction. Experiments conducted on four public MRI datasets demonstrate that FDMAT-Net outperforms existing CS-MRI methods in high-fidelity image reconstruction.
+
+## Test
+`python Test.py`
