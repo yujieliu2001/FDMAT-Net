@@ -114,18 +114,18 @@ with torch.no_grad():
         batch_x = batch_x.type(torch.FloatTensor)
         batch_x = batch_x.to(device)
 
-        x_in_k_space = torch.fft.fft2(batch_x)  # 图像域转化k-space data
-        masked_x_in_k_space = x_in_k_space * mask  # 下采样k-space data
+        x_in_k_space = torch.fft.fft2(batch_x)
+        masked_x_in_k_space = x_in_k_space * mask
 
         PhiTb = torch.fft.ifft2(masked_x_in_k_space)
-        PhiTb = torch.view_as_real(PhiTb).squeeze(1).permute(0, 3, 1, 2)    #[2,256,256]
-        masked_x_in_k_space = torch.view_as_real(masked_x_in_k_space).squeeze(1).permute(0, 3, 1, 2)  # 下采样kspace数据
+        PhiTb = torch.view_as_real(PhiTb).squeeze(1).permute(0, 3, 1, 2)
+        masked_x_in_k_space = torch.view_as_real(masked_x_in_k_space).squeeze(1).permute(0, 3, 1, 2)
 
         start = time()
         x_output = model(PhiTb, masked_x_in_k_space, mask)
 
         end = time()
-        runtime = (end - start) * 1000  # 转换为毫秒
+        runtime = (end - start) * 1000
         print(runtime, 'ms')
 
         PhiTb = complex_abs(PhiTb)
@@ -152,11 +152,6 @@ with torch.no_grad():
         #
         # resultName = imgName.replace(args.data_dir, args.result_dir)
         # cv2.imwrite("%s_%s_ratio_%d_PSNR_%.2f_SSIM_%.4f.png" % (resultName, net_name, cs_ratio, rec_PSNR, rec_SSIM), im_rec_rgb)
-
-        # im_init__rgb = np.clip(X_init*255, 0, 255).astype(np.uint8)
-        #
-        # resultName = imgName.replace(args.data_dir, args.result_dir)
-        # cv2.imwrite("%s_ZF_ratio_%d_PSNR_%.2f_SSIM_%.4f.png" % (resultName, cs_ratio, init_PSNR, init_SSIM), im_init__rgb)
         del x_output
 
         PSNR_All[0, img_no] = rec_PSNR
