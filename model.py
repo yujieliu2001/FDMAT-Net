@@ -42,8 +42,8 @@ class DataConsistencyInKspace(nn.Module):
         k0   - initially sampled elements in k-space
         mask - corresponding nonzero location
         """
-        mask = mask.unsqueeze(0).unsqueeze(-1)  # 变成 [1, 256, 256, 1]
-        mask = mask.expand(k.shape[0], -1, -1, k.shape[-1])  # 变成 [4, 256, 256, 2]
+        mask = mask.unsqueeze(0).unsqueeze(-1)
+        mask = mask.expand(k.shape[0], -1, -1, k.shape[-1])
         out = (1 - mask) * k + mask * k0
         return out
 
@@ -73,9 +73,9 @@ def drop_path(x, drop_prob: float = 0., training: bool = False):
     if drop_prob == 0. or not training:
         return x
     keep_prob = 1 - drop_prob
-    shape = (x.shape[0],) + (1,) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
+    shape = (x.shape[0],) + (1,) * (x.ndim - 1)
     random_tensor = keep_prob + torch.rand(shape, dtype=x.dtype, device=x.device)
-    random_tensor.floor_()  # binarize
+    random_tensor.floor_()
     output = x.div(keep_prob) * random_tensor
     return output
 
@@ -143,7 +143,6 @@ class CCMix(nn.Module):
         super(CCMix, self).__init__()
         self.target_dim = target_dim
         self.target_size = target_size
-        # Projection layers to unify dimensions
         self.projections = nn.ModuleList([nn.Conv2d(in_dim, target_dim, kernel_size=1) for in_dim in in_dims])
         self.ln1 = nn.LayerNorm(target_dim * 3)
         self.drop_path = DropPath(0.05) if drop_path else nn.Identity()
@@ -152,37 +151,27 @@ class CCMix(nn.Module):
         self.original_sizes = [target_size // 4, target_size // 2, target_size]
 
     def forward(self, features):
-        # Step 1: Up-sample and project each feature map
         upsampled_features = []
         output_features = []
         for i, feature in enumerate(features):
-            # Upsample to target size
             feature = F.interpolate(feature, size=self.target_size, mode='bilinear', align_corners=False)
-            # Project to target dimension directly
             feature = self.projections[i](feature)
             upsampled_features.append(feature)
 
-        # Step 2: Concatenate features along the channel axis
         concatenated = torch.cat(upsampled_features, dim=1)
-        # Prepare for MHSA: (B, C, H, W) -> (B, N, C) where N=H*W
         B, C, H, W = concatenated.shape
-        concatenated = concatenated.view(B, C, -1).permute(0, 2, 1)  # (B, N, C)
-        # Apply MHSA
+        concatenated = concatenated.view(B, C, -1).permute(0, 2, 1)
         attn_output = concatenated + self.drop_path(
             self.ln1(self.channel(concatenated, (self.target_size, self.target_size))))
 
-        # Step 3: Reshape back to (B, C, H, W)
-        B, n_patch, hidden = attn_output.size()  # reshape from (B, n_patch, hidden) to (B, h, w, hidde
+        B, n_patch, hidden = attn_output.size()
         h, w = int(np.sqrt(n_patch)), int(np.sqrt(n_patch))
         attn_output = attn_output.permute(0, 2, 1)
         attn_output = attn_output.contiguous().view(B, hidden, h, w)
 
-        # Step 4: Split output back into four feature maps with original dimensions
         split_features = torch.split(attn_output, self.target_dim, dim=1)
         for i, split_feature in enumerate(split_features):
-            # Project back to original dimension
-            split_feature = self.final_projections[i](split_feature)  # (B, H, W, original_dim)
-            # Resize to original size
+            split_feature = self.final_projections[i](split_feature)
             split_feature = F.interpolate(split_feature, size=self.original_sizes[i], mode='bilinear',
                                           align_corners=False)
             output_features.append(split_feature)
@@ -270,7 +259,7 @@ class FDMATNet(torch.nn.Module):
 
     def forward(self, PhiTb, k0, mask):
 
-        PhiTb = F.conv2d(PhiTb, self.conv_1, padding=1) # [4,32,256,256]
+        PhiTb = F.conv2d(PhiTb, self.conv_1, padding=1)
         x = PhiTb
 
         h = [None, None, None]
